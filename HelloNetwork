@@ -1,0 +1,55 @@
+import os
+import re
+import subprocess
+import time
+import datetime
+import socket
+import smtplib
+from email.mime.text import MIMEText
+
+def ping(host):
+    try:
+        response = os.system("ping -c 1 " + host)
+        if response == 0:
+            print(f"{host} is up")
+            return True
+        else:
+            print(f"{host} is down")
+            return False
+    except Exception as e:
+        print(f"Error pinging {host}: {str(e)}")
+        return False
+
+def get_local_ip():
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.connect(('8.8.8.8', 80))
+        ip = sock.getsockname()[0]
+        sock.close()
+        return ip
+    except Exception as e:
+        print(f"Error getting local IP: {str(e)}")
+        return None
+
+def check_hosts():
+    hosts = ["8.8.8.8", "8.8.4.4", "www.google.com"]
+    down_hosts = []
+    for host in hosts:
+        if not ping(host):
+            down_hosts.append(host)
+    return down_hosts
+
+def send_email(subject, body):
+    try:
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = "noreply@example.com"
+        msg['To'] = "your@email.com"
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login("your@email.com", "your_password")
+        server.sendmail("noreply@example.com", "your@email.com", msg.as_string())
+        server.quit()
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Error sending")
